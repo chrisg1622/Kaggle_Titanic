@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as plt
 import math
+import sklearn
 
 #read in train & test files
 Original_train = pd.read_csv("train.csv")
@@ -12,6 +13,9 @@ Original_test = pd.read_csv("test.csv")
 #modify test data
 train = Original_train.copy()
 test = Original_test.copy()
+
+
+##################### DATA CLEANSING ####################
 
 #delete irrelevant columns from both train and test data sets
 del train['PassengerId']
@@ -53,8 +57,22 @@ for i in range(len(test)):
         test.loc[i,'Fare'] = fare_mean
 
 
+##################### DATA VISUALISATION ####################
+train['Survived'].hist()
+train[train['Survived']==1]['Age'].hist()
+#train[train['Survived']==0]['Age'].hist()
+
+
+##################### FEATURE ENGINEERING ####################
+def FeatureEngineering(data, model='KNN'):
+    if (model=='KNN'):
+        return
+    else :
+        return
+
         
         
+##################### PREDICTIVE MODEL ####################
 
 
 
