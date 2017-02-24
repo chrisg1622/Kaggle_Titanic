@@ -7,6 +7,7 @@ import math
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
 #read in train & test files
 Original_train = pd.read_csv("input/train.csv")
@@ -20,6 +21,7 @@ test = Original_test.copy()
 ##################### DATA CLEANSING ####################
 
 #delete irrelevant columns from both train and test data sets
+test_ids = test['PassengerId']
 del train['PassengerId']
 del test['PassengerId']
 del train['Name']
@@ -112,23 +114,35 @@ def FeatureEngineering(train, test, model='Random Forest'):
         
 ##################### PREDICTIVE MODEL ####################
 #function to train a model on the training data CV, and predict on the testing data.
-def predict(X_train, t_train, test, model='Random Forest'):
+def predict(X, t, test, model='Random Forest'):
+    #split data into test and train
+    X_train, X_val, t_train, t_val = train_test_split(X,t,test_size=0.2)
+    print('Training on {} data points, validating on {} data points'.format(len(X_train),len(X_val)))
     if (model == 'Random Forest'):
         #initialise RF model and fit it
-        model1 = RandomForestClassifier(random_state=2)
+        model1 = RandomForestClassifier(n_estimators=50,
+                                        max_features=0.8,
+                                        max_depth=8,
+                                        random_state=2)
         model1.fit(X_train,t_train.values.ravel())
-        #predict on the test data
-        t_test = model1.predict(test)
         #predict on the training data and print predictive accuracy
-        t_train_predicted = model1.predict(X_train)
-        training_accuracy = accuracy_score(t_train,t_train_predicted)
-        print("Accuracy of Random Forest:",training_accuracy)
+        t_val_predicted = model1.predict(X_val)
+        val_accuracy = accuracy_score(t_val,t_val_predicted)
+        print("Accuracy of Random Forest on validation set:",val_accuracy)
+        #Train again on whole dataset and predict on the test data
+        model1.fit(X,t.values.ravel())
+        t_test = model1.predict(test)
         return t_test
     else:
         return
-        
+
 ##################### PREDICT #############################
-t_test = predict(X_train, t_train, test)
+t_test = pd.DataFrame(predict(X_train, t_train, test))
+#re-attach passenger ids to predictions
+t_test = pd.concat([test_ids,t_test],axis=1)
+t_test.columns = ['PassengerId','Survived']
+#save predictions to csv file
+t_test.to_csv('output/test_predictions.csv',index=False)
 
 
 
