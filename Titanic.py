@@ -9,8 +9,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import accuracy_score
 
 #read in train & test files
-Original_train = pd.read_csv("train.csv")
-Original_test = pd.read_csv("test.csv")
+Original_train = pd.read_csv("input/train.csv")
+Original_test = pd.read_csv("input/test.csv")
 
 #modify test data
 train = Original_train.copy()
@@ -30,14 +30,17 @@ del train['Cabin']
 del test['Cabin']
 
 #Have a look at the data and check for missing values
+print('Training data...')
 train.info()
 print("############################")
+print('Testing data...')
 test.info()
 print("############################")
 
 #create a combined data set and find the means & modes of the attributes with missing values.
 #These will be used for imputation
 combined_data = pd.concat((train.iloc[:,1:8],test))
+print('Combined data...')
 combined_data.info()
 print("############################")
 age_mean = combined_data['Age'].mean()
@@ -112,24 +115,21 @@ def FeatureEngineering(train, test, model='Random Forest'):
 def predict(X_train, t_train, test, model='Random Forest'):
     if (model == 'Random Forest'):
         #initialise RF model and fit it
-        model1 = RandomForestClassifier()
-        model1.fit(X_train,t_train)
+        model1 = RandomForestClassifier(random_state=2)
+        model1.fit(X_train,t_train.values.ravel())
         #predict on the test data
         t_test = model1.predict(test)
         #predict on the training data and print predictive accuracy
         t_train_predicted = model1.predict(X_train)
         training_accuracy = accuracy_score(t_train,t_train_predicted)
-        print("accuracy for Random Forest:",training_accuracy)
+        print("Accuracy of Random Forest:",training_accuracy)
         return t_test
     else:
         return
         
 ##################### PREDICT #############################
-#model1 = RandomForestClassifier()
-#model1 = model1.fit(X_train, t_train)
-
-
 t_test = predict(X_train, t_train, test)
+
 
 
 
